@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<pre>
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import tensorflow
+from tensorflow import keras
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
+
+(X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
+X_train = X_train/255
+X_test = X_test/255
+
+model = Sequential()
+model.add(Flatten(input_shape=(28,28)))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(10, activation='softmax'))
+
+model.summary()
+
+model.compile(loss='sparse_categorical_crossentropy', optimizer='Adam', metrics=['accuracy'])
+
+history = model.fit(X_train, y_train, epochs=10, validation_split=0.2)
+
+y_prob = model.predict(X_test)
+y_pred = y_prob.argmax(axis=-1)
+
+from sklearn.metrics import accuracy_score
+ann_accuracy = accuracy_score(y_test, y_pred)
+
+print("Accuracy Score of ANN:",ann_accuracy)
+X_train = X_train.reshape(-1, 28, 28, 1)
+X_test = X_test.reshape(-1, 28, 28, 1)
+
+model = Sequential()
+
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(Flatten())
+model.add(Dense(64, activation='relu'))
+model.add(Dense(10, activation='softmax'))
+model.summary()
+
+model.compile(loss='sparse_categorical_crossentropy', optimizer='Adam', metrics=['accuracy'])
+
+history = model.fit(X_train, y_train, epochs=10, validation_split=0.2)
+
+y_prob = model.predict(X_test)
+y_pred = y_prob.argmax(axis=-1)
+
+from sklearn.metrics import accuracy_score
+cnn_accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy of CNN:",cnn_accuracy)
+
+## Visualizing
+plt.figure(figsize=(10,5))
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Model Loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend()
+plt.show()
+
+
+plt.figure(figsize=(10,5))
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Model Accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend()
+plt.show()
+## Predicting
+plt.imshow(X_test[0])
+plt.title(model.predict(X_test[0].reshape(1,28,28,1)).argmax())
+plt.show()
+
+## Predicting
+plt.imshow(X_test[1])
+plt.title(model.predict(X_test[1].reshape(1,28,28,1)).argmax())
+plt.show()
+
+print("Accuracy of ANN:",ann_accuracy)
+print("Accuracy of CNN:",cnn_accuracy)
+print("Difference in Accuracy:",cnn_accuracy - ann_accuracy)
+
+## Comparing Accuracies of ANN & CNN
+import matplotlib.pyplot as plt
+
+accuracy_scores = [ann_accuracy * 100, cnn_accuracy * 100, (cnn_accuracy - ann_accuracy) * 100]
+
+model_names = ['ANN', 'CNN', 'DIFFERENCE']
+
+bars = plt.bar(model_names, accuracy_scores, color=['blue', 'green', 'red'])
+
+
+for bar in bars:
+  height = bar.get_height()
+  plt.text(bar.get_x() + bar.get_width()/2.0, height, f'{height:.2f}', ha='center', va='bottom')
+
+plt.xlabel('Model')
+plt.ylabel('Accuracy')
+plt.title('Comparison of ANN and CNN Accuracy')
+plt.show()
+
+
+
+
+
+
+	</pre>
+
+</body>
+</html>

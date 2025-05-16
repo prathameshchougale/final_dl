@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<pre>
+
+## importing necessary libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv('/content/Admission_Predict.csv')
+df.head(10)
+
+df.drop(['Serial No.'], axis=1, inplace=True)
+df.head(5)
+df.shape
+df.info()
+df.describe()
+df.head(5)
+df.tail(5)
+
+## separating dependent and independent features
+X = df.iloc[:,:-1]
+X.head(5)
+
+y = df.iloc[:,-1]
+y.head(5)
+
+## splitting dataset
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=42)
+X_train.shape
+X_test.shape
+y_train.shape
+y_test.shape
+
+## Standardization of data
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train_scaled = sc.fit_transform(X_train)
+X_test_scaled = sc.transform(X_test)
+
+## simple ANN deep learning model
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense
+model = Sequential()
+model.add(Dense(7, activation='relu', input_dim=7)) ## input layer
+model.add(Dense(7, activation='relu')) ## hidden layer 1
+model.add(Dense(7, activation='relu')) ## hidden layer 2
+model.add(Dense(1, activation='linear')) ## output layer
+
+model.compile(loss='mean_squared_error', optimizer='Adam')
+
+history = model.fit(X_train_scaled, y_train, epochs=100, validation_split=0.2)
+
+history.history.keys()
+y_pred = model.predict(X_test_scaled)
+from sklearn.metrics import mean_squared_error
+mse = mean_squared_error(y_test, y_pred)
+mse
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'])
+plt.show()
+from sklearn.metrics import r2_score
+
+r2 = r2_score(y_test, y_pred)
+print(f"R-squared score: {r2}")
+
+
+
+
+
+
+	</pre>
+
+</body>
+</html>

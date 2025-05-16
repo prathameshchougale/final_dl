@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<pre>
+
+from google.colab import drive
+drive.mount('/content/drive')
+# Required Libraries
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+from tensorflow.keras.preprocessing import image
+import matplotlib.pyplot as plt
+import numpy as np
+# Image size and dataset paths
+IMAGE_SIZE = [224, 224]
+train_path = '/content/drive/MyDrive/Maleria_Dataset/Train'
+test_path = '/content/drive/MyDrive/Maleria_Dataset/Test'
+# Building CNN from scratch (VGG16-like architecture)
+model = Sequential()
+# Block 1
+model.add(Conv2D(64, kernel_size=3, padding="same", activation='relu', input_shape=(224, 224, 3)))
+model.add(Conv2D(64, kernel_size=3, padding="same", activation='relu'))
+model.add(MaxPooling2D(pool_size=2))
+
+# Block 2
+model.add(Conv2D(128, kernel_size=3, padding="same", activation='relu'))
+model.add(Conv2D(128, kernel_size=3, padding="same", activation='relu'))
+model.add(MaxPooling2D(pool_size=2))
+
+# Block 3
+model.add(Conv2D(256, kernel_size=3, padding="same", activation='relu'))
+model.add(Conv2D(256, kernel_size=3, padding="same", activation='relu'))
+model.add(Conv2D(256, kernel_size=3, padding="same", activation='relu'))
+model.add(MaxPooling2D(pool_size=2))
+
+# Block 4
+model.add(Conv2D(512, kernel_size=3, padding="same", activation='relu'))
+model.add(Conv2D(512, kernel_size=3, padding="same", activation='relu'))
+model.add(Conv2D(512, kernel_size=3, padding="same", activation='relu'))
+model.add(MaxPooling2D(pool_size=2))
+
+# Block 5
+model.add(Conv2D(512, kernel_size=3, padding="same", activation='relu'))
+model.add(Conv2D(512, kernel_size=3, padding="same", activation='relu'))
+model.add(Conv2D(512, kernel_size=3, padding="same", activation='relu'))
+model.add(MaxPooling2D(pool_size=2))
+
+# FC Layers
+model.add(Flatten())
+model.add(Dense(4096, activation='relu'))
+model.add(Dense(4096, activation='relu'))
+model.add(Dense(2, activation='softmax'))  # Change 2 to number of classes if different
+# Compile
+model.compile(
+    loss='categorical_crossentropy',
+    optimizer='adam',
+    metrics=['accuracy']
+)
+
+model.summary()
+# Image Data Generators
+train_datagen = ImageDataGenerator(rescale=1./255,
+                                   shear_range=0.2,
+                                   zoom_range=0.2,
+                                   horizontal_flip=True)
+
+test_datagen = ImageDataGenerator(rescale=1./255)
+training_set = train_datagen.flow_from_directory(train_path,
+                                                 target_size=(224, 224),
+                                                 batch_size=32,
+                                                 class_mode='categorical')
+
+test_set = test_datagen.flow_from_directory(test_path,
+                                            target_size=(224, 224),
+                                            batch_size=32,
+                                            class_mode='categorical')
+# Training
+history = model.fit(training_set,
+                    validation_data=test_set,
+                    epochs=2,  # You can increase this
+                    steps_per_epoch=len(training_set),
+                    validation_steps=len(test_set)
+                    )
+# Plotting Accuracy and Loss
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Val Loss')
+plt.legend()
+plt.title("Loss")
+plt.show()
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Val Accuracy')
+plt.legend()
+plt.title("Accuracy")
+plt.show()
+model.save('/content/drive/MyDrive/model_vgg16_manual.h5')
+# Prediction on a new image
+img_path = '/content/drive/MyDrive/Maleria_Dataset/Test/Uninfected/C3thin_original_IMG_20150608_162922_cell_145.png'
+img = image.load_img(img_path, target_size=(224, 224))
+x = img_to_array(img)
+x = x / 255.0
+x = np.expand_dims(x, axis=0)
+prediction = model.predict(x)
+predicted_class = np.argmax(prediction, axis=1)[0]
+# Show result
+class_indices = training_set.class_indices
+class_labels = list(class_indices.keys())
+
+print("Predicted Class:", class_labels[predicted_class])
+
+
+
+
+
+
+	</pre>
+
+</body>
+</html>

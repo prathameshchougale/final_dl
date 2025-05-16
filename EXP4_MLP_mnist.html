@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<pre>
+		
+
+
+## importing necessary libraries
+import tensorflow
+from tensorflow import keras
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Flatten
+
+# (a) Prepare dataset train_test_split
+(X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
+X_test.shape
+y_train
+y_train.shape
+
+import matplotlib.pyplot as plt
+plt.imshow(X_train[9])
+print(X_train[9])
+X_train = X_train/255
+X_test = X_test/255
+
+print(X_train[9])
+
+#(b) Build Multilayer Perceptron Model
+model = Sequential()
+
+model.add(Flatten(input_shape=(28,28)))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(10, activation='softmax'))
+model.summary()
+
+model.compile(loss='sparse_categorical_crossentropy', optimizer='Adam', metrics=['accuracy'])
+
+history = model.fit(X_train, y_train, epochs=25, validation_split=0.2)
+
+y_prob = model.predict(X_test)
+y_pred = y_prob.argmax(axis=-1)
+
+#  (c) Evaluate Model performance
+from sklearn.metrics import accuracy_score
+ann_accuracy = accuracy_score(y_test, y_pred)
+ann_accuracy
+
+## Visualizing
+#(f) Plot dataset values for Actual Accuracy and Validation Accuracy
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+
+# (e) Visualize using validation loss, actual loss
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+
+#  (d) Predict for test data.
+plt.imshow(X_test[0])
+model.predict(X_test[0].reshape(1,28,28)).argmax(axis=-1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	</pre>
+
+</body>
+</html>
